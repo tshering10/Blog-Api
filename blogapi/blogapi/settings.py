@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'posts',
     'rest_framework',
+    'accounts',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -114,3 +116,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 ROOT_URLCONF = "blogapi.urls"
 WSGI_APPLICATION = 'blogapi.wsgi.application'
+
+#tells django to use jwt tokens for auth
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES':
+        (
+            'rest_framework_simplejwt.authentication.JWTAuthentication',
+        )
+}
