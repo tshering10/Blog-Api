@@ -1,58 +1,23 @@
-from django.shortcuts import render
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from posts.serializers import PostSerializer
-from rest_framework.views import APIView
-from rest_framework import status
-from rest_framework.response import Response
 from .models import Post
-from rest_framework import permissions
 # Create your views here.
 
-#List and create posts
-class PostList(APIView):
-    permission_classes = [permissions.AllowAny]
-    def get(self, request):
-        post = Post.objects.all()
-        serializer = PostSerializer(post, many=True)
-        return Response(serializer.data)
+class PostList(ListCreateAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
-    def post(self, request):
-        if not request.user.is_authenticated:
-            return Response({"Error": "You must be logged in to create posts."}, status=status.HTTP_401_UNAUTHORIZED)
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
         
-        serializer = PostSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(author=request.user) #assigned logged in user
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class PostDetail(RetrieveUpdateDestroyAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
     
-class PostDetail(APIView):
-    def get_object(self, pk):
-        try:
-            return Post.objects.get(pk=pk)
-        except Post.DoesNotExist:
-            return None
-        
-    def get(self, request, pk):
-        post = self.get_object(pk)
-        if not post:
-            return Response({'Error': "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer = PostSerializer(post)
-        return Response(serializer.data)
+    def perform_update(self, serializer):
+        serializer.save(author=self.request.user)
     
-    def put(self, request, pk):
-        post = self.get_object(pk)
-        if not post:
-            return Response({'Error': "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-        serializer  = PostSerializer(post, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-    def delete(self, request, pk):
-        post = self.get_object(pk)
-        if not post:
-            return Response({'Error': "Post not found."}, status=status.HTTP_404_NOT_FOUND)
-        post.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
