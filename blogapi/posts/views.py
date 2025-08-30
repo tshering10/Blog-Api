@@ -4,19 +4,24 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework.response import Response
 from .models import Post
+from rest_framework import permissions
 # Create your views here.
 
 #List and create posts
 class PostList(APIView):
+    permission_classes = [permissions.AllowAny]
     def get(self, request):
         post = Post.objects.all()
         serializer = PostSerializer(post, many=True)
         return Response(serializer.data)
     
     def post(self, request):
+        if not request.user.is_authenticated:
+            return Response({"Error": "You must be logged in to create posts."}, status=status.HTTP_401_UNAUTHORIZED)
+        
         serializer = PostSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save(author=request.user) #assigned logged in user
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
