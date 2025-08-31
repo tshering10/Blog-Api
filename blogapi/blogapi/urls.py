@@ -8,7 +8,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include("posts.urls")),
     
-    path('api/auth/', include("accounts.urls")),
+    path('api/accounts/', include("accounts.urls")),
+    
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'), #login
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'), #refresh
 
