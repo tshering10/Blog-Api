@@ -1,6 +1,6 @@
 from rest_framework import permissions
 
-class IsOwnerOrReadOnly(permissions.BasePermission):
+class IsOwnerOrReadOnlyPost(permissions.BasePermission):
     """
     Only allow owners of an object to edit/delete it.
     Others can only read.
